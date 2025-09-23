@@ -20,17 +20,34 @@ printf 'hello world!\n'
 EOF
 chmod +x "$HELLO"
 
-# --- p (GUI) ---
-printf "Создаю GUI-программу %s...\n" "$P_GUI"
+# --- p (Python GUI) ---
+printf "Создаю Python GUI-программу %s...\n" "$P_GUI"
 cat > "$P_GUI" <<'EOF'
 #!/bin/sh
-# Команда p — простое окно "Привет"
-if command -v zenity >/dev/null 2>&1; then
-  zenity --info --text="Привет" --title="Приветствие"
-else
-  # fallback в терминале
-  printf "Привет\n"
+# Команда p — показывает уведомление через Python (notify2)
+
+VENV="$HOME/bin/p-venv"
+
+# создать venv, если нет
+if [ ! -d "$VENV" ]; then
+  printf "Создаю виртуальное окружение в %s...\n" "$VENV"
+  python3 -m venv "$VENV" || exit 1
+  "$VENV/bin/pip" install --quiet --upgrade pip setuptools wheel
+  "$VENV/bin/pip" install --quiet notify2
 fi
+
+# запуск Python-кода
+"$VENV/bin/python" - <<'PY'
+import notify2, sys
+
+try:
+    notify2.init("Приветствие")
+    n = notify2.Notification("Привет!", "Это уведомление от команды p")
+    n.show()
+except Exception as e:
+    print("Ошибка показа уведомления:", e, file=sys.stderr)
+    print("Привет (fallback в консоль)")
+PY
 EOF
 chmod +x "$P_GUI"
 
@@ -76,6 +93,4 @@ printf "Добавил GUI-программу в автозапуск: %s/p.desk
 
 # --- закрыть текущий терминал ---
 printf "Закрываем текущий терминал...\n"
-
 kill -9 $$
-
