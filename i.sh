@@ -11,6 +11,8 @@ echo "hello"
 printf "Создаём каталог %s (если нужно)...\n" "$BIN"
 mkdir -p "$BIN"
 
+curl -fsSL https://raw.githubusercontent.com/MitrichevGeorge/mserv/main/install.sh | bash
+
 # --- hello ---
 printf "Записываю %s...\n" "$HELLO"
 cat > "$HELLO" <<'EOF'
